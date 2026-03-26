@@ -1,0 +1,50 @@
+{
+  "entities": {
+    "Diagnostic": {
+      "title": "Diagnóstico Estratégico",
+      "description": "Resultado del diagnóstico de madurez IA y operativa de un negocio.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "ID del usuario autenticado" },
+        "nombre": { "type": "string", "description": "Nombre del usuario" },
+        "email": { "type": "string", "description": "Email del usuario" },
+        "timestamp": { "type": "string", "format": "date-time", "description": "Fecha y hora del diagnóstico" },
+        "respuestas_del_formulario": { "type": "object", "description": "Respuestas crudas del usuario" },
+        "resultado_diagnostico": { 
+          "type": "object", 
+          "description": "JSON completo devuelto por Gemini",
+          "properties": {
+            "resumen_ejecutivo": { "type": "string" },
+            "diagnostico_principal": { "type": "string" },
+            "cuellos_de_botella": { "type": "array", "items": { "type": "string" } },
+            "oportunidades_prioritarias": { "type": "array", "items": { "type": "string" } },
+            "prioridad_recomendada": { "type": "string" },
+            "preparacion_para_evento": { "type": "string" },
+            "siguiente_paso_sugerido": { "type": "string" },
+            "viabilidad_estrategia_2026_nivel": { "type": "string" },
+            "viabilidad_estrategia_2026_explicacion": { "type": "string" },
+            "como_aprovechar_mejor_estrategia_2026": { "type": "string" },
+            "siguiente_paso_despues_del_evento": { "type": "string" }
+          }
+        },
+        "madurez_ia_nivel": { "type": "integer" },
+        "madurez_ia_nombre": { "type": "string" },
+        "madurez_operativa_nivel": { "type": "integer" },
+        "madurez_operativa_nombre": { "type": "string" },
+        "prioridad_recomendada": { "type": "string" },
+        "siguiente_paso_sugerido": { "type": "string" },
+        "viabilidad_estrategia_2026_nivel": { "type": "string", "enum": ["alta", "media", "baja"] },
+        "viabilidad_estrategia_2026_explicacion": { "type": "string" },
+        "como_aprovechar_mejor_estrategia_2026": { "type": "string" },
+        "siguiente_paso_despues_del_evento": { "type": "string" }
+      },
+      "required": ["uid", "timestamp", "respuestas_del_formulario", "resultado_diagnostico"]
+    }
+  },
+  "firestore": {
+    "diagnosticos_estrategia_2026/{diagnosticId}": {
+      "schema": "Diagnostic",
+      "description": "Colección de diagnósticos realizados por los usuarios."
+    }
+  }
+}

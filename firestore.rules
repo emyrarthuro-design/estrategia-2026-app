@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: diagnosticos_estrategia_2026
+    // Document ID: auto-generated
+    // Fields:
+    //   - uid: string (required) - ID del usuario autenticado
+    //   - nombre: string (optional) - Nombre del usuario
+    //   - email: string (optional) - Email del usuario
+    //   - timestamp: timestamp (required) - Fecha y hora del diagnóstico
+    //   - respuestas_del_formulario: map (required) - Respuestas crudas del usuario
+    //   - resultado_diagnostico: map (required) - JSON completo devuelto por Gemini
+    //   - madurez_ia_nivel: int (required)
+    //   - madurez_ia_nombre: string (optional)
+    //   - madurez_operativa_nivel: int (required)
+    //   - madurez_operativa_nombre: string (optional)
+    //   - prioridad_recomendada: string (required)
+    //   - siguiente_paso_sugerido: string (required)
+    //   - viabilidad_estrategia_2026_nivel: string (required)
+    //   - viabilidad_estrategia_2026_explicacion: string (required)
+    //   - como_aprovechar_mejor_estrategia_2026: string (required)
+    //   - siguiente_paso_despues_del_evento: string (required)
+    //
+    // ===============================================================
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function isValidDiagnostic(data) {
+      return data.uid is string &&
+             data.timestamp is timestamp &&
+             data.respuestas_del_formulario is map &&
+             data.resultado_diagnostico is map &&
+             data.resultado_diagnostico.resumen_ejecutivo is string &&
+             data.resultado_diagnostico.diagnostico_principal is string &&
+             data.resultado_diagnostico.cuellos_de_botella is list &&
+             data.resultado_diagnostico.oportunidades_prioritarias is list &&
+             data.madurez_ia_nivel is int &&
+             data.madurez_operativa_nivel is int &&
+             data.prioridad_recomendada is string &&
+             data.siguiente_paso_sugerido is string &&
+             data.viabilidad_estrategia_2026_nivel in ['alta', 'media', 'baja'] &&
+             data.viabilidad_estrategia_2026_explicacion is string &&
+             data.como_aprovechar_mejor_estrategia_2026 is string &&
+             data.siguiente_paso_despues_del_evento is string;
+    }
+
+    match /diagnosticos_estrategia_2026/{diagnosticId} {
+      // Solo el dueño puede leer sus propios diagnósticos
+      allow read: if isAuthenticated() && isOwner(resource.data.uid);
+      
+      // Solo el usuario autenticado puede crear su diagnóstico
+      allow create: if isAuthenticated() && 
+                    isOwner(request.resource.data.uid) && 
+                    isValidDiagnostic(request.resource.data);
+      
+      // No se permiten actualizaciones ni eliminaciones por ahora para preservar integridad
+      allow update, delete: if false;
+    }
+
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+  }
+}
